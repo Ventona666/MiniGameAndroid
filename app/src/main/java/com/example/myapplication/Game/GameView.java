@@ -23,6 +23,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
     private static final float SENSITIVITY = 0.5f;
     GameThread thread;
     int[][] maze = {
+            {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
             {1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
             {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
             {1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1},
@@ -155,7 +156,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
     @Override
     public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
         ballX = 50;
-        ballY = 15;
+        ballY = 55;
     }
 
     @Override
@@ -236,8 +237,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
 
     @Override
     public void onVolumeLevelChanged(float volumeLevel) {
-        System.out.println(volumeLevel);
-        float speed = Math.min(Math.max(volumeLevel, 1), 5);
+        float speed = Math.min(Math.max(volumeLevel / 25, 1), 10);
         speedX = dirX * speed;
         speedY = dirY * speed;
     }
