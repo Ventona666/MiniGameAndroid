@@ -23,6 +23,11 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".GameEnding.GameEnding"
+            android:exported="true"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity
             android:name=".Game.GameActivity"
             android:screenOrientation="portrait" />
     </application>

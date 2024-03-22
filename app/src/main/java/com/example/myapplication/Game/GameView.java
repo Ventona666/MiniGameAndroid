@@ -4,6 +4,7 @@ import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -13,19 +14,27 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Handler;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import androidx.annotation.NonNull;
 
+import com.example.myapplication.GameEnding.GameEnding;
 import com.example.utils.MicrophoneUtils;
 
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 
 public class GameView extends SurfaceView implements SurfaceHolder.Callback, MicrophoneUtils.MicrophoneCallback, SensorEventListener {
 
+    private boolean isWinGame = false;
+    private Timer timer;
+    private long startTimeMillis;
     private static final int BONUS_DELAY = 5000;
     private static final int BUBBLE_RADIUS = 100;
     private int bonusCountdown = 5;
@@ -40,7 +49,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
     int[][] maze = {
             {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
             {1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-            {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+            {1, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
             {1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1},
             {1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1},
             {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1},
@@ -86,8 +95,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
     private SensorManager sensorManager;
     private Sensor accelerometer;
 
+    private Activity activity;
+
     public GameView(Activity activity) {
         super(activity);
+        activity = activity;
         setFocusable(true);
         ballPaint = new Paint();
         ballPaint.setColor(Color.RED);
@@ -103,6 +115,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
         bubblePaint.setColor(Color.parseColor("#FFA500"));
         bubblePaint.setAntiAlias(true);
         startBonusTimer();
+        startTimeMillis = System.currentTimeMillis();
     }
 
     public int getPixelColor(int x, int y) {
@@ -202,6 +215,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
     public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
         terminateThread();
         sensorManager.unregisterListener(this);
+        stopTimer();
     }
 
     public void terminateThread() {
@@ -227,6 +241,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
             if (maze[nextPixelY][nextPixelX] == 1) {
                 return;
             }
+
+            if (maze[nextPixelY][nextPixelX] == 2) {
+                winGame();
+            }
+
 
             ballX = nextX;
             ballY = nextY;
@@ -338,5 +357,32 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
         }
         startColor = colors[(int) (colorProgress * (colors.length - 1))];
         endColor = colors[(int) (colorProgress * (colors.length - 1)) + 1];
+    }
+
+
+
+    private void stopTimer() {
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
+    }
+
+    private String formatTime(long millis) {
+        return String.format("%02d:%02d:%02d",
+                TimeUnit.MILLISECONDS.toHours(millis),
+                TimeUnit.MILLISECONDS.toMinutes(millis) -
+                        TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)),
+                TimeUnit.MILLISECONDS.toSeconds(millis) -
+                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis)));
+    }
+
+    public void winGame(){
+        long endTimeMillis = System.currentTimeMillis();
+        long elapsedTimeMillis = endTimeMillis - startTimeMillis;
+        Intent intent = new Intent(getContext(), GameEnding.class);
+        intent.putExtra("valTimer", formatTime(elapsedTimeMillis));
+        getContext().startActivity(intent);
+
     }
 }
