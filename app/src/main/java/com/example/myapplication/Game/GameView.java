@@ -46,7 +46,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
             {1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1}
     };
     private float ballX, ballY;
-    private int ballRadius = 40;
+    private int ballRadius = 10;
     private float speedX = 0, speedY = 0, dirX = 0, dirY = 0;
     private boolean moving = true;
     private Paint ballPaint;
@@ -166,9 +166,34 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
 
     public void update() {
         if (moving) {
-            ballX += speedX;
-            ballY += speedY;
 
+            float nextX = ballX + speedX;
+            float nextY = ballY + speedY;
+            int nextPixelX = (int) (nextX / cellWidth);
+            int nextPixelY = (int) (nextY / cellHeight);
+
+            if (nextPixelX >= 0 && nextPixelX < cols && nextPixelY >= 0 && nextPixelY < rows) {
+                if (maze[nextPixelY][nextPixelX] == 1) {
+                    speedX = 0;
+                    speedY = 0;
+
+                    if(dirX == 1 ){
+                        ballX -= ballRadius;
+                    }
+                    if(dirX == -1){
+                        ballX += ballRadius;
+                    }
+                    if(dirY == 1 ){
+                        ballY -= ballRadius;
+                    }
+                    if(dirY == -1){
+                        ballY += ballRadius;
+                    }
+                    return;
+                }
+            }
+            ballX = nextX;
+            ballY = nextY;
             if (ballX - ballRadius < 0) {
                 ballX = ballRadius;
             } else if (ballX + ballRadius > getWidth()) {
