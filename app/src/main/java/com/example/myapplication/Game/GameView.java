@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.Game;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -7,8 +7,12 @@ import android.graphics.Paint;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import com.example.myapplication.GameThread;
+
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private GameThread thread;
+    private int x = 0;
+
     public GameView(Context context) {
         super(context);
         getHolder().addCallback(this);
@@ -20,11 +24,13 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     public void surfaceChanged(SurfaceHolder holder, int format, int width,
                                int height) {
     }
+
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         thread.setRunning(true);
         thread.start();
     }
+
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         boolean retry = true;
@@ -39,7 +45,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-    private int x=0;
     @Override
     public void draw(Canvas canvas) {
         super.draw(canvas);
@@ -47,13 +52,13 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             canvas.drawColor(Color.WHITE);
             Paint paint = new Paint();
             paint.setColor(Color.rgb(250, 0, 0));
-            canvas.drawRect(x, 100, x+100, 200, paint);
+            canvas.drawRect(x, 100, x + 100, 200, paint);
         }
     }
+
     public void update() {
         x = (x + 1) % 300;
     }
-
 
 
 }

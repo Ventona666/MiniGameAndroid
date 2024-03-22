@@ -5,8 +5,6 @@ import android.os.Bundle;
 import android.view.Window;
 import android.view.WindowManager;
 
-import com.example.myapplication.GameView;
-
 public class MenuActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
