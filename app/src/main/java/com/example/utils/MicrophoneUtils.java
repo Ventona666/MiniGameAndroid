@@ -46,8 +46,8 @@ public class MicrophoneUtils {
 
         if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.RECORD_AUDIO}, 15);
-
         }
+
         audioRecord = new AudioRecord(
                 MediaRecorder.AudioSource.MIC,
                 SAMPLE_RATE,
