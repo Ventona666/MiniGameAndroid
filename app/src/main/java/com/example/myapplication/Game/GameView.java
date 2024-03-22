@@ -1,20 +1,24 @@
 package com.example.myapplication.Game;
 
-import android.content.Context;
+import android.app.Activity;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-public class GameView extends SurfaceView implements SurfaceHolder.Callback {
+import com.example.utils.MicrophoneUtils;
+
+public class GameView extends SurfaceView implements SurfaceHolder.Callback, MicrophoneUtils.MicrophoneCallback {
     private GameThread thread;
     private int x = 0;
 
-    public GameView(Context context) {
-        super(context);
+    public GameView(Activity activity) {
+        super(activity);
         getHolder().addCallback(this);
         thread = new GameThread(getHolder(), this);
+        MicrophoneUtils.setMicrophoneCallback(this);
+        MicrophoneUtils.startRecording(activity);
         setFocusable(true);
     }
 
@@ -58,5 +62,13 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         x = (x + 1) % 300;
     }
 
+    private void stopRecording() { // TODO call this method when the game is over
+        MicrophoneUtils.stopRecording(null);
+    }
 
+
+    @Override
+    public void onVolumeLevelChanged(float volumeLevel) {
+        System.out.println(volumeLevel);
+    }
 }
