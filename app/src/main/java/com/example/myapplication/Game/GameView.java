@@ -21,15 +21,7 @@ import com.example.utils.MicrophoneUtils;
 public class GameView extends SurfaceView implements SurfaceHolder.Callback, MicrophoneUtils.MicrophoneCallback, SensorEventListener {
 
     private static final float SENSITIVITY = 0.5f;
-    private float ballX, ballY;
-    private int ballRadius = 40;
-    private float speedX = 0, speedY = 0;
-    private boolean moving = true;
-
-    private Paint ballPaint;
-
     GameThread thread;
-
     int[][] maze = {
             {1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1},
             {1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0},
@@ -53,7 +45,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
             {1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1},
             {1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1}
     };
-
+    private float ballX, ballY;
+    private int ballRadius = 40;
+    private float speedX = 0, speedY = 0;
+    private boolean moving = true;
+    private Paint ballPaint;
     private int rows = maze.length;
     private int cols = maze[0].length;
 
@@ -118,6 +114,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
         super.draw(canvas);
         if (canvas != null) {
             canvas.drawColor(Color.WHITE);
+            canvas.drawCircle(ballX, ballY, ballRadius, ballPaint);
         }
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
@@ -133,14 +130,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
                     canvas.drawRect(left, top, right, bottom, spacePaint);
                 }
             }
-        }
-    }
-
-    @Override
-    public void draw(Canvas canvas) {
-        super.draw(canvas);
-        if (canvas != null) {
-            canvas.drawCircle(ballX, ballY, ballRadius, ballPaint);
         }
     }
 
