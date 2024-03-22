@@ -187,6 +187,11 @@ public class PsychedelicBackgroundView extends View {
     private float[] triangleDy;
 
     private void generateRandomTrianglePositions(int width, int height) {
+        if (width <= 0 || height <= 0) {
+            // Handle invalid width or height
+            return;
+        }
+
         triangleX = new float[NUM_TRIANGLES];
         triangleY = new float[NUM_TRIANGLES];
         triangleDx = new float[NUM_TRIANGLES];

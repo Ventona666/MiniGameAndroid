@@ -50,13 +50,26 @@ public class DirectionButtonView extends SurfaceView implements SurfaceHolder.Ca
         arrowUp = BitmapFactory.decodeResource(getResources(), R.drawable.arrow_up);
         arrowDown = BitmapFactory.decodeResource(getResources(), R.drawable.arrow_down);
 
+        setZOrderOnTop(true);
+        getHolder().setFormat(android.graphics.PixelFormat.TRANSLUCENT);
+        setBackgroundColor(Color.TRANSPARENT);
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        // Set the canvas size to fit the bounds of the drawables
+        canvasWidth = arrowLeft.getWidth() * 2; // Assuming all arrows have the same width
+        canvasHeight = arrowUp.getHeight() * 2; // Assuming all arrows have the same height
+
+        // Set the canvas size
+        getLayoutParams().width = canvasWidth;
+        getLayoutParams().height = canvasHeight;
     }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        isDrawing = true;// Get canvas dimensions
-        canvasWidth = getWidth();
-        canvasHeight = getHeight();
+        isDrawing = true;
         Canvas canvas = holder.lockCanvas();
         drawButtons(canvas);
         holder.unlockCanvasAndPost(canvas);
@@ -65,8 +78,6 @@ public class DirectionButtonView extends SurfaceView implements SurfaceHolder.Ca
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         // Handle surface changes if needed
-        canvasWidth = width;
-        canvasHeight = height;
     }
 
     @Override
@@ -82,30 +93,17 @@ public class DirectionButtonView extends SurfaceView implements SurfaceHolder.Ca
         int centerX = canvasWidth / 2;
         int centerY = canvasHeight / 2;
 
-        // Calculate the dimensions of each arrow bitmap
-        int arrowLeftWidth = arrowLeft.getWidth();
-        int arrowLeftHeight = arrowLeft.getHeight();
-
-        int arrowRightWidth = arrowRight.getWidth();
-        int arrowRightHeight = arrowRight.getHeight();
-
-        int arrowUpWidth = arrowUp.getWidth();
-        int arrowUpHeight = arrowUp.getHeight();
-
-        int arrowDownWidth = arrowDown.getWidth();
-        int arrowDownHeight = arrowDown.getHeight();
-
         // Calculate the positions to center each arrow bitmap
-        arrowLeftX = centerX - arrowLeftWidth;
-        arrowLeftY = centerY - (arrowLeftHeight / 2);
+        arrowLeftX = centerX - arrowLeft.getWidth();
+        arrowLeftY = centerY - (arrowLeft.getHeight() / 2);
 
         arrowRightX = centerX;
-        arrowRightY = centerY - (arrowRightHeight / 2);
+        arrowRightY = centerY - (arrowRight.getHeight() / 2);
 
-        arrowUpX = centerX - (arrowUpWidth / 2);
-        arrowUpY = centerY - arrowUpHeight;
+        arrowUpX = centerX - (arrowUp.getWidth() / 2);
+        arrowUpY = centerY - arrowUp.getHeight();
 
-        arrowDownX = centerX - (arrowDownWidth / 2);
+        arrowDownX = centerX - (arrowDown.getWidth() / 2);
         arrowDownY = centerY;
 
         // Draw each arrow bitmap at its respective position
@@ -130,23 +128,23 @@ public class DirectionButtonView extends SurfaceView implements SurfaceHolder.Ca
                 if (isInsideBitmap(x, y, arrowLeftX, arrowLeftY, arrowLeft)) {
                     // Handle click on left arrow
                     // Perform action for left arrow click
-                    direction=Direction.LEFT;
+                    direction = Direction.LEFT;
                 } else if (isInsideBitmap(x, y, arrowRightX, arrowRightY, arrowRight)) {
                     // Handle click on right arrow
                     // Perform action for right arrow click
-                    direction=Direction.RIGHT;
+                    direction = Direction.RIGHT;
                 } else if (isInsideBitmap(x, y, arrowUpX, arrowUpY, arrowUp)) {
                     // Handle click on up arrow
                     // Perform action for up arrow click
-                    direction=Direction.UP;
+                    direction = Direction.UP;
                 } else if (isInsideBitmap(x, y, arrowDownX, arrowDownY, arrowDown)) {
                     // Handle click on down arrow
                     // Perform action for down arrow click
-                    direction=Direction.DOWN;
+                    direction = Direction.DOWN;
                 }
                 break;
         }
-        Log.d("event","Touché :"+getDirection());
+        Log.d("event", "Touché :" + getDirection());
         return true;
     }
 

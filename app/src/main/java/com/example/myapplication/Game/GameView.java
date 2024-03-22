@@ -16,8 +16,12 @@ import android.hardware.SensorManager;
 import android.os.Handler;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 
@@ -73,7 +77,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
     };
     boolean lcdFilterIsOn = false;
     private int bonusCountdown = 5;
-    private Handler handler = new Handler();
     private Random random = new Random();
     private Paint bubblePaint;
     private float bubbleX, bubbleY;
@@ -93,12 +96,26 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
     private float colorProgress = 0; // Progression du changement de couleur
     private SensorManager sensorManager;
     private Sensor accelerometer;
+    private static final int EFFECT_DURATION_MS = 10000;
+
 
     private Activity activity;
 
-    public GameView(Activity activity) {
+
+    private boolean isEffectActive = false;
+    private Handler handler = new Handler();
+    private FrameLayout rootLayout;
+    private FrameLayout.LayoutParams bParams;
+    DirectionButtonView buttons = new DirectionButtonView(getContext());
+
+    public GameView(Activity activity, FrameLayout root, FrameLayout.LayoutParams buttonParams) {
         super(activity);
         activity = activity;
+        rootLayout = root;
+        bParams = buttonParams;
+        rootLayout.addView(buttons);// Create and add GameView
+        buttons.setLayoutParams(bParams);
+        buttons.setVisibility(GONE);
         setFocusable(true);
         ballPaint = new Paint();
         ballPaint.setColor(Color.RED);
@@ -116,6 +133,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
         startBonusTimer();
         startTimeMillis = System.currentTimeMillis();
     }
+
 
     public int getPixelColor(int x, int y) {
         int color = 0;
@@ -218,6 +236,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
         terminateThread();
         sensorManager.unregisterListener(this);
         stopTimer();
+        handler.removeCallbacksAndMessages(null);
     }
 
     public void terminateThread() {
@@ -317,7 +336,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
             if (bonusCountdown == 0) {
                 lcdFilterIsOn = false;
                 toogleLSDFilter();
-
+                buttons.setVisibility(GONE);
+                sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
                 bonusCountdown = 5;
                 bubbleClicked = true;
                 startBonusTimer();
@@ -332,9 +352,13 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
             public void run() {
                 lcdFilterIsOn = true;
                 toogleLSDFilter();
+                buttons.setVisibility(VISIBLE);
+                dirX=0;
+                dirY=0;
+                sensorManager.unregisterListener(GameView.this);
                 bubbleClicked = false;
-                float maxX = getWidth() - BUBBLE_RADIUS;
-                float maxY = getHeight() - BUBBLE_RADIUS;
+                float maxX = (getWidth() - BUBBLE_RADIUS)/2;
+                float maxY = (getHeight() - BUBBLE_RADIUS)/2;
                 bubbleX = Math.max(BUBBLE_RADIUS, random.nextFloat() * maxX);
                 bubbleY = Math.max(BUBBLE_RADIUS, random.nextFloat() * maxY);
                 invalidate();
