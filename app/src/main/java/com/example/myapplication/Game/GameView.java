@@ -21,13 +21,41 @@ import com.example.utils.MicrophoneUtils;
 public class GameView extends SurfaceView implements SurfaceHolder.Callback, MicrophoneUtils.MicrophoneCallback, SensorEventListener {
 
     private static final float SENSITIVITY = 0.5f;
+    GameThread thread;
+    int[][] maze = {
+            {1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1},
+            {1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0},
+            {1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0},
+            {0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1},
+            {1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0},
+            {1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0},
+            {1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1},
+            {1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1},
+            {0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1},
+            {1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1},
+            {0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1},
+            {1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1},
+            {1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0},
+            {1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0},
+            {0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1},
+            {1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1},
+            {1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1},
+            {0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1},
+            {1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+            {1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1},
+            {1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1}
+    };
     private float ballX, ballY;
     private int ballRadius = 40;
     private float speedX = 0, speedY = 0;
     private boolean moving = true;
-
     private Paint ballPaint;
-    private GameThread thread;
+    private int rows = maze.length;
+    private int cols = maze[0].length;
+
+    private float cellWidth, cellHeight;
+    private Paint wallPaint, spacePaint;
+
     private SensorManager sensorManager;
     private Sensor accelerometer;
 
@@ -37,6 +65,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
         ballPaint = new Paint();
         ballPaint.setColor(Color.YELLOW);
         thread = new GameThread(getHolder(), this);
+        init();
         getHolder().addCallback(this);
         MicrophoneUtils.setMicrophoneCallback(this);
         MicrophoneUtils.startRecording(activity);
@@ -65,11 +94,42 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
     }
 
 
+    private void init() {
+        wallPaint = new Paint();
+        wallPaint.setColor(Color.WHITE); // Couleur des espaces vides
+        spacePaint = new Paint();
+        spacePaint.setColor(Color.BLACK); // Couleur des murs
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        // Calculer la taille de chaque cellule
+        cellWidth = w / (float) cols;
+        cellHeight = w / (float) rows;
+    }
+
     @Override
     public void draw(Canvas canvas) {
         super.draw(canvas);
         if (canvas != null) {
+            canvas.drawColor(Color.WHITE);
             canvas.drawCircle(ballX, ballY, ballRadius, ballPaint);
+        }
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                float left = j * cellWidth;
+                float top = i * cellHeight;
+                float right = left + cellWidth;
+                float bottom = top + cellHeight;
+                if (maze[i][j] == 1) {
+                    // Dessiner un mur
+                    canvas.drawRect(left, top, right, bottom, wallPaint);
+                } else {
+                    // Dessiner un espace vide
+                    canvas.drawRect(left, top, right, bottom, spacePaint);
+                }
+            }
         }
     }
 
