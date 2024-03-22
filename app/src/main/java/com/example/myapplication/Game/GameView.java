@@ -1,5 +1,6 @@
 package com.example.myapplication.Game;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -13,8 +14,10 @@ import android.view.SurfaceView;
 
 import androidx.annotation.NonNull;
 
+import com.example.utils.MicrophoneUtils;
 
-public class GameView extends SurfaceView implements SurfaceHolder.Callback, SensorEventListener {
+
+public class GameView extends SurfaceView implements SurfaceHolder.Callback, MicrophoneUtils.MicrophoneCallback, SensorEventListener {
 
     private static final float SENSITIVITY = 0.5f;
     private float ballX, ballY;
@@ -27,15 +30,16 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Sen
     private SensorManager sensorManager;
     private Sensor accelerometer;
 
-    public GameView(Context context) {
-        super(context);
+    public GameView(Activity activity) {
+        super(activity);
         setFocusable(true);
         ballPaint = new Paint();
         ballPaint.setColor(Color.YELLOW);
         thread = new GameThread(getHolder(), this);
         getHolder().addCallback(this);
-
-        sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+        MicrophoneUtils.setMicrophoneCallback(this);
+        MicrophoneUtils.startRecording(activity);
+        sensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
     }
@@ -124,5 +128,15 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Sen
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
+    }
+
+    private void stopRecording() { // TODO call this method when the game is over
+        MicrophoneUtils.stopRecording(null);
+    }
+
+
+    @Override
+    public void onVolumeLevelChanged(float volumeLevel) {
+        System.out.println(volumeLevel);
     }
 }
