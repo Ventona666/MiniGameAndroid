@@ -48,7 +48,10 @@ public class DirectionButtonView extends SurfaceView implements SurfaceHolder.Ca
         arrowLeft = BitmapFactory.decodeResource(getResources(), R.drawable.arrow_left);
         arrowRight = BitmapFactory.decodeResource(getResources(), R.drawable.arrow_right);
         arrowUp = BitmapFactory.decodeResource(getResources(), R.drawable.arrow_up);
-        arrowDown = BitmapFactory.decodeResource(getResources(), R.drawable.arrow_down);
+        arrowDown = BitmapFactory.decodeResource(getResources(), R.drawable.arrow_down);// Set transparent background
+        setZOrderOnTop(true);
+        getHolder().setFormat(android.graphics.PixelFormat.TRANSLUCENT);
+        setBackgroundColor(Color.TRANSPARENT);
 
     }
 
