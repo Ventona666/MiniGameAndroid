@@ -1,27 +1,44 @@
 package com.example.myapplication.Menu;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.widget.Toast;
+
+import androidx.core.app.ActivityCompat;
 
 import com.example.myapplication.Game.GameActivity;
+import com.example.utils.PermissionCode;
 
 public class MenuView extends SurfaceView implements SurfaceHolder.Callback {
     private Paint paint;
     private boolean isButtonPressed;
+    private Activity activity;
 
-    public MenuView(Context context) {
-        super(context);
+    public MenuView(Activity activity) {
+        super(activity);
+        this.activity = activity;
         getHolder().addCallback(this);
         paint = new Paint();
         paint.setColor(Color.WHITE);
         paint.setTextSize(50);
         isButtonPressed = false;
+    }
+
+    public void permissionResult(boolean accepted) {
+        if (accepted) {
+            launchGameActivity();
+        } else {
+            Toast.makeText(activity, "Cette permission est requise", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -47,7 +64,7 @@ public class MenuView extends SurfaceView implements SurfaceHolder.Callback {
                 float y = event.getY();
                 if (isButtonPressed(x, y)) {
                     isButtonPressed = true;
-                    launchGameActivity();
+                    preLaunchGameActivity();
                 }
                 break;
             case MotionEvent.ACTION_UP:
@@ -93,6 +110,14 @@ public class MenuView extends SurfaceView implements SurfaceHolder.Callback {
             // Draw the text at the center of the screen
             canvas.drawText("Jouer", textX, textY, paint);
             getHolder().unlockCanvasAndPost(canvas);
+        }
+    }
+
+    private void preLaunchGameActivity() {
+        if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.RECORD_AUDIO}, PermissionCode.REQUEST_RECORD_AUDIO_PERMISSION);
+        } else {
+            launchGameActivity();
         }
     }
 
