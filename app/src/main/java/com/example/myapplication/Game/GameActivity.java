@@ -4,10 +4,13 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.example.myapplication.R;
 
@@ -20,13 +23,19 @@ public class GameActivity extends Activity {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.game);
 
-        FrameLayout root = findViewById(R.id.root);
+        FrameLayout root = findViewById(R.id.frameLayout);
 
         // Create and add DirectionButtonView
         GameView gameView = new GameView(this);
-        root.addView(gameView);
+        root.addView(gameView);// Set constraints for DirectionButtonView
+        FrameLayout.LayoutParams buttonParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT
+        );
+        buttonParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
         DirectionButtonView buttons = new DirectionButtonView(this);
         root.addView(buttons);// Create and add GameView
+        buttons.setLayoutParams(buttonParams);
 
 
         SharedPreferences sharedPref =
