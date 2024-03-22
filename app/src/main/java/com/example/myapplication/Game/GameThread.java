@@ -1,13 +1,14 @@
-package com.example.myapplication;
+package com.example.myapplication.Game;
 
 import android.graphics.Canvas;
 import android.view.SurfaceHolder;
 
 public class GameThread extends Thread {
+    Canvas canvas;
     private SurfaceHolder surfaceHolder;
     private GameView gameView;
     private Boolean running;
-    Canvas canvas;
+
     public GameThread(SurfaceHolder surfaceHolder, GameView gameView) {
         super();
         this.surfaceHolder = surfaceHolder;
@@ -20,12 +21,12 @@ public class GameThread extends Thread {
             canvas = null;
             try {
                 canvas = this.surfaceHolder.lockCanvas();
-                synchronized(surfaceHolder) {
+                synchronized (surfaceHolder) {
                     this.gameView.update();
                     this.gameView.draw(canvas);
                 }
-            } catch (Exception e) {}
-            finally {
+            } catch (Exception e) {
+            } finally {
                 if (canvas != null) {
                     try {
                         surfaceHolder.unlockCanvasAndPost(canvas);
