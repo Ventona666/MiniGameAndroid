@@ -23,4 +23,8 @@ public class GameActivity extends Activity {
         editor.putInt("valeur_y", valeur_y);
         editor.apply();
     }
+    @Override
+    public void onBackPressed() {
+        // Disable the back button functionality (leave empty)
+    }
 }
