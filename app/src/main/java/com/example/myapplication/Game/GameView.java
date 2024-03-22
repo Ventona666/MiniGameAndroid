@@ -37,14 +37,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
     private long startTimeMillis;
     private static final int BONUS_DELAY = 5000;
     private static final int BUBBLE_RADIUS = 100;
-    private int bonusCountdown = 5;
-    private Handler handler = new Handler();
-    private Random random = new Random();
     private static final float SENSITIVITY = 0.5f;
-
-    private Paint bubblePaint;
-    private float bubbleX, bubbleY;
-    private boolean bubbleClicked = true;
     GameThread thread;
     int[][] maze = {
             {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -79,6 +72,12 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
             {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
     };
     boolean lcdFilterIsOn = false;
+    private int bonusCountdown = 5;
+    private Handler handler = new Handler();
+    private Random random = new Random();
+    private Paint bubblePaint;
+    private float bubbleX, bubbleY;
+    private boolean bubbleClicked = true;
     private float ballX, ballY;
     private int ballRadius = 10;
     private float speedX = 0, speedY = 0, dirX = 0, dirY = 0;
@@ -140,9 +139,12 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
 
     private void init() {
         wallPaint = new Paint();
-        wallPaint.setColor(Color.BLACK); // Couleur des espaces vides
+        wallPaint.setColor(Color.BLACK);
+        wallPaint.setStyle(Paint.Style.FILL);
+        wallPaint.setAntiAlias(true);
+
         spacePaint = new Paint();
-        spacePaint.setColor(Color.WHITE); // Couleur des murs
+        spacePaint.setColor(Color.WHITE);
         endPaint = new Paint();
         endPaint.setColor(Color.GREEN); // Couleur de l'arrivée
     }
@@ -312,6 +314,14 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
                 bubbleX = Math.max(BUBBLE_RADIUS, random.nextFloat() * maxX);
                 bubbleY = Math.max(BUBBLE_RADIUS, random.nextFloat() * maxY);
             }
+            if (bonusCountdown == 0) {
+                lcdFilterIsOn = false;
+                toogleLSDFilter();
+
+                bonusCountdown = 5;
+                bubbleClicked = true;
+                startBonusTimer();
+            }
         }
         return true;
     }
@@ -320,6 +330,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
+                lcdFilterIsOn = true;
+                toogleLSDFilter();
                 bubbleClicked = false;
                 float maxX = getWidth() - BUBBLE_RADIUS;
                 float maxY = getHeight() - BUBBLE_RADIUS;
@@ -331,9 +343,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
     }
 
     private void toogleLSDFilter() {
-        wallPaint.setStyle(Paint.Style.FILL);
-        wallPaint.setAntiAlias(true);
-
         ValueAnimator colorAnimator = ValueAnimator.ofFloat(0f, 1f);
         colorAnimator.setDuration(500);
         colorAnimator.setRepeatCount(ValueAnimator.INFINITE);
