@@ -2,6 +2,7 @@ package com.example.myapplication.Game;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -43,6 +44,26 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
     }
+
+    public int getPixelColor(int x, int y) {
+        int color = 0;
+        SurfaceHolder holder = getHolder();
+        Canvas canvas = holder.lockCanvas();
+        if (canvas != null) {
+            try {
+                Bitmap bitmap = Bitmap.createBitmap(canvas.getWidth(), canvas.getHeight(), Bitmap.Config.ARGB_8888);
+                Canvas tempCanvas = new Canvas(bitmap);
+                draw(tempCanvas); // Simulate drawing onto the bitmap
+                color = bitmap.getPixel(x, y); // Get pixel color from the bitmap
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                holder.unlockCanvasAndPost(canvas);
+            }
+        }
+        return color;
+    }
+
 
     @Override
     public void draw(Canvas canvas) {
