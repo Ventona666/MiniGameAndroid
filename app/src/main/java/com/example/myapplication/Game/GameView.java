@@ -12,6 +12,8 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Handler;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -19,12 +21,24 @@ import androidx.annotation.NonNull;
 
 import com.example.utils.MicrophoneUtils;
 
+import java.util.Random;
+
 
 public class GameView extends SurfaceView implements SurfaceHolder.Callback, MicrophoneUtils.MicrophoneCallback, SensorEventListener {
 
+    private static final int BONUS_DELAY = 5000;
+    private static final int BUBBLE_RADIUS = 100;
+    private int bonusCountdown = 5;
+    private Handler handler = new Handler();
+    private Random random = new Random();
     private static final float SENSITIVITY = 0.5f;
+
+    private Paint bubblePaint;
+    private float bubbleX, bubbleY;
+    private boolean bubbleClicked = true;
     GameThread thread;
     int[][] maze = {
+            {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
             {1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
             {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
             {1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1},
@@ -76,7 +90,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
         super(activity);
         setFocusable(true);
         ballPaint = new Paint();
-        ballPaint.setColor(Color.YELLOW);
+        ballPaint.setColor(Color.RED);
         thread = new GameThread(getHolder(), this);
         init();
         getHolder().addCallback(this);
@@ -85,6 +99,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
         sensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        bubblePaint = new Paint();
+        bubblePaint.setColor(Color.parseColor("#FFA500"));
+        bubblePaint.setAntiAlias(true);
+        startBonusTimer();
     }
 
     public int getPixelColor(int x, int y) {
@@ -136,22 +154,35 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
                     float right = left + cellWidth;
                     float bottom = top + cellHeight;
                     if (maze[i][j] == 1) {
-                        // Dessiner un mur
                         canvas.drawRect(left, top, right, bottom, wallPaint);
                     } else if (maze[i][j] == 2) {
-                        // Dessiner case d'arrivée
+
                         canvas.drawRect(left, top, right, bottom, endPaint);
                     } else {
-                        // Dessiner un espace vide
+
                         canvas.drawRect(left, top, right, bottom, spacePaint);
                     }
                 }
             }
             canvas.drawCircle(ballX, ballY, ballRadius, ballPaint);
-        }
-
-        if (lcdFilterIsOn) {
-            wallPaint.setColor((int) evaluator.evaluate(colorProgress, startColor, endColor));
+            if (bonusCountdown > 0 && !bubbleClicked) {
+                int textSize = 25;
+                canvas.drawCircle(bubbleX, bubbleY, BUBBLE_RADIUS, bubblePaint);
+                Paint textPaint = new Paint();
+                textPaint.setColor(Color.WHITE);
+                textPaint.setTextSize(textSize);
+                textPaint.setTextAlign(Paint.Align.CENTER);
+                String[] lines = ("Clique sur moi !\n" + bonusCountdown).split("\n");
+                float textX = bubbleX;
+                float textY = bubbleY;
+                for (String line : lines) {
+                    canvas.drawText(line, textX, textY, textPaint);
+                    textY += textSize * 1.5;
+                }
+            }
+            if (lcdFilterIsOn) {
+                wallPaint.setColor((int) evaluator.evaluate(colorProgress, startColor, endColor));
+            }
         }
     }
 
@@ -163,8 +194,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
 
     @Override
     public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
-        ballX = 40;
-        ballY = 15;
+        ballX = 50;
+        ballY = 55;
     }
 
     @Override
@@ -188,32 +219,15 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
 
     public void update() {
         if (moving) {
-
             float nextX = ballX + speedX;
             float nextY = ballY + speedY;
-            int nextPixelX = (int) (nextX / cellWidth);
-            int nextPixelY = (int) (nextY / cellHeight);
+            int nextPixelX = (int) ((nextX + ballRadius * dirX) / cellWidth);
+            int nextPixelY = (int) ((nextY + ballRadius * dirY) / cellHeight);
 
-            if (nextPixelX >= 0 && nextPixelX < cols && nextPixelY >= 0 && nextPixelY < rows) {
-                if (maze[nextPixelY][nextPixelX] == 1) {
-                    speedX = 0;
-                    speedY = 0;
-
-                    if (dirX == 1) {
-                        ballX -= ballRadius;
-                    }
-                    if (dirX == -1) {
-                        ballX += ballRadius;
-                    }
-                    if (dirY == 1) {
-                        ballY -= ballRadius;
-                    }
-                    if (dirY == -1) {
-                        ballY += ballRadius;
-                    }
-                    return;
-                }
+            if (maze[nextPixelY][nextPixelX] == 1) {
+                return;
             }
+
             ballX = nextX;
             ballY = nextY;
             if (ballX - ballRadius < 0) {
@@ -262,10 +276,39 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
 
     @Override
     public void onVolumeLevelChanged(float volumeLevel) {
-        System.out.println(volumeLevel);
-        float speed = Math.min(Math.max(volumeLevel, 1), 20);
+        float speed = Math.min(Math.max(volumeLevel / 25, 1), 10);
         speedX = dirX * speed;
         speedY = dirY * speed;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN && bonusCountdown > 0 && !bubbleClicked) {
+            float touchX = event.getX();
+            float touchY = event.getY();
+            if (Math.sqrt((touchX - bubbleX) * (touchX - bubbleX) + (touchY - bubbleY) * (touchY - bubbleY)) < 50) {
+                bonusCountdown--;
+                float maxX = getWidth() - BUBBLE_RADIUS;
+                float maxY = getHeight() - BUBBLE_RADIUS;
+                bubbleX = Math.max(BUBBLE_RADIUS, random.nextFloat() * maxX);
+                bubbleY = Math.max(BUBBLE_RADIUS, random.nextFloat() * maxY);
+            }
+        }
+        return true;
+    }
+
+    private void startBonusTimer() {
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                bubbleClicked = false;
+                float maxX = getWidth() - BUBBLE_RADIUS;
+                float maxY = getHeight() - BUBBLE_RADIUS;
+                bubbleX = Math.max(BUBBLE_RADIUS, random.nextFloat() * maxX);
+                bubbleY = Math.max(BUBBLE_RADIUS, random.nextFloat() * maxY);
+                invalidate();
+            }
+        }, BONUS_DELAY);
     }
 
     private void toogleLSDFilter() {
