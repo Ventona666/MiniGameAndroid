@@ -7,8 +7,6 @@ import android.graphics.Paint;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import com.example.myapplication.GameThread;
-
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private GameThread thread;
     private int x = 0;

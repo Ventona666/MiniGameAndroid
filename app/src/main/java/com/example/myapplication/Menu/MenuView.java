@@ -10,7 +10,6 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import com.example.myapplication.Game.GameActivity;
-import com.example.myapplication.MainActivity;
 
 public class MenuView extends SurfaceView implements SurfaceHolder.Callback {
     private Paint paint;
@@ -99,7 +98,7 @@ public class MenuView extends SurfaceView implements SurfaceHolder.Callback {
 
     private void launchGameActivity() {
         Context context = getContext();
-        Intent intent = new Intent(context, MainActivity.class);
+        Intent intent = new Intent(context, GameActivity.class);
         context.startActivity(intent);
     }
 }
