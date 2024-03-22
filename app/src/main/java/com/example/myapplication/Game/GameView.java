@@ -23,7 +23,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
     private static final float SENSITIVITY = 0.5f;
     private float ballX, ballY;
     private int ballRadius = 40;
-    private float speedX = 0, speedY = 0;
+    private float speedX = 0, speedY = 0, dirX = 0, dirY = 0;
     private boolean moving = true;
 
     private Paint ballPaint;
@@ -111,10 +111,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
 
             if (ballX - ballRadius < 0) {
                 ballX = ballRadius;
-                speedX = Math.abs(speedX);
             } else if (ballX + ballRadius > getWidth()) {
                 ballX = getWidth() - ballRadius;
-                speedX = -Math.abs(speedX);
             }
 
             if (ballY - ballRadius < 0) {
@@ -122,7 +120,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
                 speedY = Math.abs(speedY);
             } else if (ballY + ballRadius > getHeight()) {
                 ballY = getHeight() - ballRadius;
-                speedY = -Math.abs(speedY);
             }
         }
     }
@@ -133,15 +130,15 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
         float y = event.values[1];
 
         if (Math.abs(x) < SENSITIVITY && Math.abs(y) < SENSITIVITY) {
-            speedX = 0;
-            speedY = 0;
+            dirX = 0;
+            dirY = 0;
         } else {
             if (Math.abs(x) > Math.abs(y)) {
-                speedX = x < 0 ? 5 : -5;
-                speedY = 0;
+                dirX = x < 0 ? 1 : -1;
+                dirY = 0;
             } else {
-                speedX = 0;
-                speedY = y < 0 ? -5 : 5;
+                dirX = 0;
+                dirY = y < 0 ? -1 : 1;
             }
         }
     }
@@ -159,5 +156,9 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
     @Override
     public void onVolumeLevelChanged(float volumeLevel) {
         System.out.println(volumeLevel);
+        float speed = Math.min(Math.max(volumeLevel, 1), 20);
+        speedX = dirX * speed;
+        speedY = dirY * speed;
     }
+
 }
