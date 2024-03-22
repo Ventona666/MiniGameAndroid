@@ -181,8 +181,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
         if (moving) {
             float nextX = ballX + speedX;
             float nextY = ballY + speedY;
-            int nextPixelX = (int) ((nextX + ballRadius) / cellWidth);
-            int nextPixelY = (int) ((nextY + ballRadius) / cellHeight);
+            int nextPixelX = (int) ((nextX + ballRadius * dirX) / cellWidth);
+            int nextPixelY = (int) ((nextY + ballRadius * dirY) / cellHeight);
 
             if (maze[nextPixelY][nextPixelX] == 1) {
                 return;
@@ -237,7 +237,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
     @Override
     public void onVolumeLevelChanged(float volumeLevel) {
         System.out.println(volumeLevel);
-        float speed = Math.min(Math.max(volumeLevel, 1), 1);
+        float speed = Math.min(Math.max(volumeLevel, 1), 5);
         speedX = dirX * speed;
         speedY = dirY * speed;
     }
