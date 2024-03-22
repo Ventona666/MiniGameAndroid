@@ -25,17 +25,14 @@ public class GameActivity extends Activity {
 
         FrameLayout root = findViewById(R.id.frameLayout);
 
-        // Create and add DirectionButtonView
-        GameView gameView = new GameView(this);
-        root.addView(gameView);// Set constraints for DirectionButtonView
         FrameLayout.LayoutParams buttonParams = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
         );
         buttonParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-        DirectionButtonView buttons = new DirectionButtonView(this);
-        root.addView(buttons);// Create and add GameView
-        buttons.setLayoutParams(buttonParams);
+        // Create and add DirectionButtonView
+        GameView gameView = new GameView(this, root, buttonParams);
+        root.addView(gameView);
 
 
         SharedPreferences sharedPref =

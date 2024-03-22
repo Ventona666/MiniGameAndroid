@@ -1,6 +1,5 @@
 package com.example.myapplication.Game;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -11,6 +10,9 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.FrameLayout;
@@ -18,6 +20,8 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 
 import com.example.utils.MicrophoneUtils;
+
+import java.util.Random;
 
 
 public class GameView extends SurfaceView implements SurfaceHolder.Callback, MicrophoneUtils.MicrophoneCallback, SensorEventListener {
@@ -68,9 +72,30 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
 
     private SensorManager sensorManager;
     private Sensor accelerometer;
+    private static final int EFFECT_DURATION_MS = 10000;
+    private static final Random random = new Random();
 
-    public GameView(Activity activity) {
+
+    private boolean isEffectActive = false;
+    private Handler handler = new Handler(Looper.getMainLooper());
+    private Runnable effectRunnable = new Runnable() {
+        @Override
+        public void run() {
+            // Remove the effect after its duration
+            removeEffect();
+        }
+    };
+    private FrameLayout rootLayout;
+    private FrameLayout.LayoutParams bParams;
+    DirectionButtonView buttons = new DirectionButtonView(getContext());
+
+    public GameView(Activity activity, FrameLayout root, FrameLayout.LayoutParams buttonParams) {
         super(activity);
+        rootLayout = root;
+        bParams = buttonParams;
+        rootLayout.addView(buttons);// Create and add GameView
+        buttons.setLayoutParams(bParams);
+        buttons.setVisibility(GONE);
         setFocusable(true);
         ballPaint = new Paint();
         ballPaint.setColor(Color.YELLOW);
@@ -84,6 +109,46 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
+
+    private void scheduleNextEffect() {
+        // Schedule the next effect after a delay
+        handler.postDelayed(() -> {
+            if (!isEffectActive) {
+                GameEffect[] effects = GameEffect.values();
+                Random random = new Random();
+                GameEffect randomEffect = effects[random.nextInt(effects.length)];
+                applyEffect(randomEffect);
+            }
+        }, EFFECT_DURATION_MS);
+    }
+
+    private void applyEffect(GameEffect randomEffect) {
+        // Apply the effect
+        isEffectActive = true;
+        switch (randomEffect){
+            case ARROWS:
+                if (rootLayout != null) {
+                    Log.d("Cyka Blyat","Effect activated!");
+                    buttons.setVisibility(VISIBLE);
+
+                }
+            case TRIP:
+            default:
+
+        }
+        handler.postDelayed(effectRunnable, EFFECT_DURATION_MS);
+    }
+
+    private void removeEffect() {
+        // Remove the effect
+        isEffectActive = false;
+        // Undo the effect, if applicable
+        // For demonstration, let's just print a message
+        System.out.println("Effect deactivated!");
+        buttons.setVisibility(GONE);
+        // Schedule the next effect
+        scheduleNextEffect();
+    }
     public int getPixelColor(int x, int y) {
         int color = 0;
         SurfaceHolder holder = getHolder();
@@ -152,6 +217,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
     public void surfaceCreated(@NonNull SurfaceHolder holder) {
         thread.setRunning(true);
         thread.start();
+        scheduleNextEffect();
     }
 
     @Override
@@ -164,6 +230,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
     public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
         terminateThread();
         sensorManager.unregisterListener(this);
+        handler.removeCallbacksAndMessages(null);
     }
 
     public void terminateThread() {
@@ -248,7 +315,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
 
     }
 
-    private void stopRecording() { // TODO call this method when the game is over
+    private void stopRecording() {
         MicrophoneUtils.stopRecording(null);
     }
 
