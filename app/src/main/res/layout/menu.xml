@@ -6,7 +6,24 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Menu.MenuActivity">
-
+    <com.example.myapplication.Menu.PsychedelicBackgroundView
+        android:id="@+id/trippyBackgroundView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="LSD (Labyrinthe Sans Dangers)"
+        android:textColor="@color/white"
+        android:textSize="25sp"
+        android:gravity="center"
+        app:layout_constraintBottom_toTopOf="@+id/play"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
     <Button
         android:id="@+id/play"
         android:layout_width="match_parent"
