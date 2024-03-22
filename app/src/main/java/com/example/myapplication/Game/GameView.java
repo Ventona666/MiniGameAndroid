@@ -1,5 +1,7 @@
 package com.example.myapplication.Game;
 
+import android.animation.ArgbEvaluator;
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -53,6 +55,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
             {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
             {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
     };
+    boolean lcdFilterIsOn = false;
     private float ballX, ballY;
     private int ballRadius = 10;
     private float speedX = 0, speedY = 0, dirX = 0, dirY = 0;
@@ -60,10 +63,12 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
     private Paint ballPaint;
     private int rows = maze.length;
     private int cols = maze[0].length;
-
     private float cellWidth, cellHeight;
     private Paint wallPaint, spacePaint, endPaint;
-
+    private int[] colors = {Color.RED, Color.GREEN, Color.BLUE}; // Couleurs du dégradé
+    private int startColor, endColor; // Couleurs de début et de fin du dégradé
+    private ArgbEvaluator evaluator = new ArgbEvaluator(); // Évaluateur de couleur
+    private float colorProgress = 0; // Progression du changement de couleur
     private SensorManager sensorManager;
     private Sensor accelerometer;
 
@@ -134,15 +139,19 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
                         // Dessiner un mur
                         canvas.drawRect(left, top, right, bottom, wallPaint);
                     } else if (maze[i][j] == 2) {
-                    // Dessiner case d'arrivée
-                    canvas.drawRect(left, top, right, bottom, endPaint);
-                } else {
+                        // Dessiner case d'arrivée
+                        canvas.drawRect(left, top, right, bottom, endPaint);
+                    } else {
                         // Dessiner un espace vide
                         canvas.drawRect(left, top, right, bottom, spacePaint);
                     }
                 }
             }
             canvas.drawCircle(ballX, ballY, ballRadius, ballPaint);
+        }
+
+        if (lcdFilterIsOn) {
+            wallPaint.setColor((int) evaluator.evaluate(colorProgress, startColor, endColor));
         }
     }
 
@@ -190,16 +199,16 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
                     speedX = 0;
                     speedY = 0;
 
-                    if(dirX == 1 ){
+                    if (dirX == 1) {
                         ballX -= ballRadius;
                     }
-                    if(dirX == -1){
+                    if (dirX == -1) {
                         ballX += ballRadius;
                     }
-                    if(dirY == 1 ){
+                    if (dirY == 1) {
                         ballY -= ballRadius;
                     }
-                    if(dirY == -1){
+                    if (dirY == -1) {
                         ballY += ballRadius;
                     }
                     return;
@@ -257,5 +266,34 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
         float speed = Math.min(Math.max(volumeLevel, 1), 20);
         speedX = dirX * speed;
         speedY = dirY * speed;
+    }
+
+    private void toogleLSDFilter() {
+        wallPaint.setStyle(Paint.Style.FILL);
+        wallPaint.setAntiAlias(true);
+
+        ValueAnimator colorAnimator = ValueAnimator.ofFloat(0f, 1f);
+        colorAnimator.setDuration(500);
+        colorAnimator.setRepeatCount(ValueAnimator.INFINITE);
+        colorAnimator.addUpdateListener(animation -> {
+            colorProgress = animation.getAnimatedFraction();
+            updateGradient();
+            invalidate();
+        });
+
+        if (lcdFilterIsOn) {
+            colorAnimator.start();
+        } else {
+            wallPaint.setColor(Color.BLACK);
+            colorAnimator.end();
+        }
+    }
+
+    private void updateGradient() {
+        if (colorProgress >= 1.0f) {
+            colorProgress = 0.0f;
+        }
+        startColor = colors[(int) (colorProgress * (colors.length - 1))];
+        endColor = colors[(int) (colorProgress * (colors.length - 1)) + 1];
     }
 }
