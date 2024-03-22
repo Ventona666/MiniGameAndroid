@@ -36,6 +36,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
     private boolean bubbleClicked = true;
     GameThread thread;
     int[][] maze = {
+            {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
             {1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
             {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
             {1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1},
@@ -84,7 +85,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
         super(activity);
         setFocusable(true);
         ballPaint = new Paint();
-        ballPaint.setColor(Color.YELLOW);
+        ballPaint.setColor(Color.RED);
         thread = new GameThread(getHolder(), this);
         init();
         getHolder().addCallback(this);
@@ -183,8 +184,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
 
     @Override
     public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
-        ballX = 40;
-        ballY = 15;
+        ballX = 50;
+        ballY = 55;
     }
 
     @Override
@@ -208,32 +209,15 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
 
     public void update() {
         if (moving) {
-
             float nextX = ballX + speedX;
             float nextY = ballY + speedY;
-            int nextPixelX = (int) (nextX / cellWidth);
-            int nextPixelY = (int) (nextY / cellHeight);
+            int nextPixelX = (int) ((nextX + ballRadius * dirX) / cellWidth);
+            int nextPixelY = (int) ((nextY + ballRadius * dirY) / cellHeight);
 
-            if (nextPixelX >= 0 && nextPixelX < cols && nextPixelY >= 0 && nextPixelY < rows) {
-                if (maze[nextPixelY][nextPixelX] == 1) {
-                    speedX = 0;
-                    speedY = 0;
-
-                    if(dirX == 1 ){
-                        ballX -= ballRadius;
-                    }
-                    if(dirX == -1){
-                        ballX += ballRadius;
-                    }
-                    if(dirY == 1 ){
-                        ballY -= ballRadius;
-                    }
-                    if(dirY == -1){
-                        ballY += ballRadius;
-                    }
-                    return;
-                }
+            if (maze[nextPixelY][nextPixelX] == 1) {
+                return;
             }
+
             ballX = nextX;
             ballY = nextY;
             if (ballX - ballRadius < 0) {
@@ -282,8 +266,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Mic
 
     @Override
     public void onVolumeLevelChanged(float volumeLevel) {
-        System.out.println(volumeLevel);
-        float speed = Math.min(Math.max(volumeLevel, 1), 20);
+        float speed = Math.min(Math.max(volumeLevel / 25, 1), 10);
         speedX = dirX * speed;
         speedY = dirY * speed;
     }
